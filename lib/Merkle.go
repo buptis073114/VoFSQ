@@ -967,7 +967,7 @@ func Verify(node map[int64][]byte, filename string,identity string, readbitlen i
 
 	rootnodestring = strings.Replace(rootnodestring, " ", "", -1)
 	//fmt.Println("rootnodestring is ", rootnodestring)
-	
+
 	var bittosting string = biu.ToBinaryString(leafnodenum)
 
 	bittosting = strings.Replace(bittosting, "[", "", -1)
