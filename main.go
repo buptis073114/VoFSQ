@@ -2,10 +2,8 @@ package main
 
 import (
 	"./lib"
-	"./proverInitPhase"
-	"time"
-	"unsafe"
-
+	"./proverProofPhase"
+	"./verifierProofPhase"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -13,13 +11,12 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"unsafe"
 )
 
 const (
 	message = "hello world!"
 	secret  = "0933e54e76b24731a2d84b6b463ec04c"
-	//fileName = "C:\\Users\\Yuan Fy\\OneDrive\\Documents\\ITFSS\\ITFSS\\bianyi.png"
-	fileName = "C:\\Users\\ss\\D\\GoProject\\ITFSS\\01.png"
 	readbitlen int64 = 10
 )
 
@@ -59,76 +56,20 @@ func file2Bytes(filename string) ([]byte, error) {
 	return data, nil
 }
 
-func testevidencefile(identity string) {
-	//根据分享的文件生成证明文件，包括两部分，一部分是生成默克尔树的叶子节点，存储在.block文件中，另外一部分是随机数，保存在.nounce文件中
-	//fileName := "C:\\Users\\Yuan Fy\\OneDrive\\Documents\\ITFSS\\ITFSS\\bianyi.png"
-	var evidencefilepath = fileName + ".blocks"
-	var evidencenouncefile = fileName + ".nounce"
-	lib.GenerateEvidenceFile(identity, fileName, evidencefilepath, evidencenouncefile, readbitlen)
-	evidencefilesize := lib.CalcEvidenceFileSize(fileName, readbitlen, 256)
-	//获取文件大小
-	filesize := lib.GetFileSize(evidencefilepath)
-	if evidencefilesize == filesize {
-		fmt.Println("yes")
-		fmt.Println("size of file .blocks is ",filesize)
-		fmt.Println("size of file .nounceis ",lib.GetFileSize(evidencenouncefile))
-	}
-}
-
-func testevidencecachfile(evidencefile string, evidencecachfile string, ch string) {
-	lib.NewMerkleTreeContainAllNodes(evidencefile, ch, evidencecachfile)
-}
 
 
 
-func main() {
-	proverInitPhase.TestGenerateBlock()
-	//generate ecc public and private pair
-	//lib.GenerateECCKey1()
-	////read publickey，generate idnetity
+
+var (
+	size int64
+	path string
+	identity string
+)
+
+func generateIndentity(){
 	publicKey := lib.GetECCPublicKeyByte("eccpublic.pem")
-	identity := lib.GetSHA256HashCode(publicKey)
+	identity = lib.GetSHA256HashCode(publicKey)
 	fmt.Println("user identity is ", identity)
-	////测试生成证明文件，
-	t1:=time.Now() //获取本地现在时间
-	testevidencefile(identity)
-	elapsed := time.Since(t1)
-	fmt.Println("生成验证文件的时间：", elapsed)
-	//1000个计算hash值的时间
-	/*
-		t1:=time.Now() //获取本地现在时间
-		for i:=0;i<1000;i++{
-			TestSha256Time()
-		}
-		elapsed := time.Since(t1)
-		fmt.Println("elapsed=", elapsed)
-	*/
-
-
-	//给定一个ch，生成默克尔树
-	//evidencefileName是存放所有叶子节点的文件
-	evidencefileName := fileName + ".blocks"
-	//node需要nouce
-	evidencenouncefile := fileName + ".nounce"
-	//node需要filedigest
-	//var filedigest string
-	//filedigest = lib.GetSHA256HashCodeFile(fileName)
-	//fmt.Println(fileName+"文件摘要 is ", filedigest)
-	//node是[head||tail||nouce||filedigest]
-	var ch string = "12345678901234567890123456789014"
-	//将默克尔树写进缓存
-	//testevidencecachfile(evidencefileName, evidencecachfile, ch)
-	//得到node的序号和值
-	var node map[int64][]byte
-	node = lib.GetNodePath(fileName, evidencefileName, evidencenouncefile, ch,readbitlen)
-	//fmt.Println("传输的信息 is ", node)
-	//unsafe.Sizeof(hmap) + (len(theMap) * 8) + (len(theMap) * 8 * unsafe.Sizeof(x)) + (len(theMap) * 8 * unsafe.Sizeof(y))
-	fmt.Println("传输的信息大小 is ", unsafe.Sizeof(node))
-	//node = lib.GetNodePath(evidencefileName, ch)
-	var verifyresult string
-	verifyresult = lib.Verify(node,fileName,identity,readbitlen,ch)
-	fmt.Println("verifyresult is ", verifyresult)
-
 }
 
 func TestSha256Time(){
@@ -139,3 +80,27 @@ func TestSha256Time(){
 	trys += strconv.FormatInt(tyrnum, 10)
 	lib.GetSHA256HashCode([]byte(trys))
 }
+
+
+
+func main() {
+
+	//proverInitPhase.TestGenerateBlock()
+	//generateIndentity()
+	//proverInitPhase.GenerateEvidenceFile(identity)
+
+
+	publicKey := lib.GetECCPublicKeyByte("eccpublic.pem")
+	identity := lib.GetSHA256HashCode(publicKey)
+	fmt.Println("user identity is ", identity)
+
+	var ch string = "12345678901234567890123456789014"
+
+	filename:="5K"
+	var readbitlen int64=10
+	node := proverProofPhase.GenerateMerkleTree(filename,readbitlen,identity,ch)
+	fmt.Println("Information transmitted is ", node)
+	fmt.Println("Size of information transmitted is ", unsafe.Sizeof(node))
+	verifierProofPhase.Verify(node,filename,identity,readbitlen,ch)
+}
+
