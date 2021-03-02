@@ -4,6 +4,7 @@ import (
 	"./lib"
 	"./proverProofPhase"
 	"./verifierProofPhase"
+	"./proverInitPhase"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -85,10 +86,9 @@ func TestSha256Time(){
 
 func main() {
 
-	//proverInitPhase.TestGenerateBlock()
-	//generateIndentity()
-	//proverInitPhase.GenerateEvidenceFile(identity)
-
+	proverInitPhase.TestGenerateBlock()
+	generateIndentity()
+	proverInitPhase.GenerateEvidenceFile(identity)
 
 	publicKey := lib.GetECCPublicKeyByte("eccpublic.pem")
 	identity := lib.GetSHA256HashCode(publicKey)
