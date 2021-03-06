@@ -2,9 +2,9 @@ package main
 
 import (
 	"./lib"
+	"./proverInitPhase"
 	"./proverProofPhase"
 	"./verifierProofPhase"
-	"./proverInitPhase"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -16,8 +16,6 @@ import (
 )
 
 const (
-	message = "hello world!"
-	secret  = "0933e54e76b24731a2d84b6b463ec04c"
 	readbitlen int64 = 10
 )
 
@@ -82,6 +80,11 @@ func TestSha256Time(){
 	lib.GetSHA256HashCode([]byte(trys))
 }
 
+func usage(){
+	fmt.Println("./main.exe proverinit")
+	fmt.Println("./main.exe proverproof")
+	fmt.Println("./main.exe proververify")
+}
 
 
 func main() {
