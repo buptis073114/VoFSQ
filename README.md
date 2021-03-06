@@ -5,7 +5,7 @@ VoFSQ: An Efficient File-Sharing Consensus Protocol
 Verifications of File-Sharing Qualification (VoFSQ). VoFSQ allows file-holders to verify with each other whether the shared-file has been preserved for a period of time. It also ensures that the content of shared-file is indeed what the file downloader wants under the condition that more than 2/3 participants are honest. Compared to the consensus protocol of Filecoin, VoFSQ is more efficient in the prover and verifier proof phases, because it uses a simple shared-file associated Proof of SpaceTime (PoST) to complete the qualification verification. Meanwhile, VoFSQ does not disclose the private information of shared-file during the consensus process, and does not rely on trusted third parties
 
 
-##Build the source:
+## Build the source:
 
 ```shell script
 go build main.go
@@ -14,7 +14,7 @@ go build main.go
 ./main.exe
 ```
 
-###Prover Initialization Phase
+### Prover Initialization Phase
 
 prover runs the parallel limited proof of work (PL-PoW) to generate the evidence file.
 Difficulty value can be adjusted dynamically and it determines the difficulty of PL-PoW.
@@ -30,7 +30,7 @@ The evidence file includes two parts: node file ending in .block and random numb
 For example, Initialize the "1K" file will generate "1K.block" and "1K.nonce" files.
 
 
-###Prover Proof Phase
+### Prover Proof Phase
 Any verifier can challenge the prover by sending a random string ch. Upon receiving the challenge, prover utilizes the preserved evidence file to generate response message.
 
 In this project, the value of ch is fixed, as follows:
@@ -46,14 +46,14 @@ node := proverProofPhase.GenerateMerkleTree(filename,readbitlen,identity,ch)
 node is the response result which includes the selected node and the path from the corresponding node to the root node.
 
 
-###Verifier Proof phase
+### Verifier Proof phase
 When verifiers receive the response result, they begin to verify:
 ```
 verifierProofPhase.Verify(node,filename,identity,readbitlen,ch)
 ```
 
 
-##Example of program running:
+## Example of program running:
 
 ![test](https://github.com/buptis073114/VoFSQ/blob/master/img/run.png)
 
@@ -61,7 +61,7 @@ verifierProofPhase.Verify(node,filename,identity,readbitlen,ch)
 
 ![test](https://github.com/buptis073114/VoFSQ/blob/master/img/verify.png)
 
-#Contract:
+# Contract:
 sushuai@iie.ac.cn
 
 yuanfangyuan@iie.ac.cn
