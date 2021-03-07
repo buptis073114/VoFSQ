@@ -13,15 +13,15 @@ import (
 )
 
 func clientSendMessageAndListen() {
-	//开启客户端的本地监听（主要用来接收节点的reply信息）
+	//Turn on the local monitoring of the client (mainly used to receive the reply information of the node)
 	go clientTcpListen()
-	fmt.Printf("客户端开启监听，地址：%s\n", clientAddr)
+	fmt.Printf("Client starts monitoring, address: %s\n", clientAddr)
 
 	fmt.Println(" ---------------------------------------------------------------------------------")
-	fmt.Println("|  已进入PBFT测试Demo客户端，请启动全部节点后再发送消息！ :)  |")
+	fmt.Println("|  Pbft test demo client has entered, please start all nodes before sending messages)  |")
 	fmt.Println(" ---------------------------------------------------------------------------------")
-	fmt.Println("请在下方输入要存入节点的信息：")
-	//首先通过命令行获取用户输入
+	fmt.Println("Please enter the information to be saved in the node below:")
+	//First, get user input from command line
 	stdReader := bufio.NewReader(os.Stdin)
 	for {
 		data, err := stdReader.ReadString('\n')
@@ -33,7 +33,7 @@ func clientSendMessageAndListen() {
 		r.Timestamp = time.Now().UnixNano()
 		r.ClientAddr = clientAddr
 		r.Message.ID = getRandom()
-		//消息内容就是用户的输入
+		//The message content is the user's input
 		r.Message.Content = strings.TrimSpace(data)
 		br, err := json.Marshal(r)
 		if err != nil {
@@ -43,12 +43,12 @@ func clientSendMessageAndListen() {
 		starttime := time.Now()
 		fmt.Println(starttime)
 		content := jointMessage(cRequest, br)
-		//默认N0为主节点，直接把请求信息发送至N0
+		//Default N0 is the primary node, and the request information is sent directly to N0
 		tcpDial(content, nodeTable["N0"])
 	}
 }
 
-//返回一个十位数的随机数，作为msgid
+//Returns a ten digit random number as msgid
 func getRandom() int {
 	x := big.NewInt(10000000000)
 	for {

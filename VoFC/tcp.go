@@ -7,7 +7,7 @@ import (
 	"net"
 )
 
-//客户端使用的tcp监听
+//TCP monitoring used by client
 func clientTcpListen() {
 	listen, err := net.Listen("tcp", clientAddr)
 	if err != nil {
@@ -29,13 +29,13 @@ func clientTcpListen() {
 
 }
 
-//节点使用的tcp监听
+//TCP listenning used by nodes
 func (p *pbft) tcpListen() {
 	listen, err := net.Listen("tcp", p.node.addr)
 	if err != nil {
 		log.Panic(err)
 	}
-	fmt.Printf("节点开启监听，地址：%s\n", p.node.addr)
+	fmt.Printf("The node starts listening, address:%s\n", p.node.addr)
 	defer listen.Close()
 
 	for {
@@ -52,7 +52,7 @@ func (p *pbft) tcpListen() {
 
 }
 
-//使用tcp发送消息
+//Sending messages using TCP
 func tcpDial(context []byte, addr string) {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
