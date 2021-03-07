@@ -7,8 +7,8 @@ This demo is the code implementation of VoFC consensus algorithm. If you want to
 This demo shows some functions of VoFC (not include master node rotation mechanism), which is not rigorous and is only used for understanding VoFC
 
 
-![VoFC](![test](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC.png)
-)
+![VoFC](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC.png)
+
 ## Function:
 
 There are three roles in VoFC, Client, Primary and replica. Client can be viewed as file downloader. The primary is a special file sharer who is elected by other file-sharers. The replica represents other file-sharers except the primary. There are five phases in file-consistency verification, namely request, pre-prepare, prepare, commit and reply.
