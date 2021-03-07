@@ -7,7 +7,7 @@ This demo is the code implementation of VoFC consensus algorithm. If you want to
 This demo shows some functions of VoFC (not include master node rotation mechanism), which is not rigorous and is only used for understanding VoFC
 
 
-![VoFC](![test](https://github.com/buptis073114/VoFSQ/tree/master/img/VoFC.png)
+![VoFC](![test](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC.png)
 )
 ## Function:
 
@@ -53,7 +53,7 @@ vofc.exe N2
 vofc.exe N3
 ```
 
-![startup](https://github.com/buptis073114/VoFSQ/tree/master/img/VoFC1.png)
+![startup](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC1.png)
 ##### 3.Enter message to see the synchronization process between nodes
 ![在这里插入图片描述](images/启动后.png)
 ##### 4.关闭一个节点（代表作恶、故障节点），再次输入信息，看看是否还会接收到reply
