@@ -59,6 +59,6 @@ vofc.exe N3
 ##### 4.Close a node (representing the evil or fault node) and input the information again to see if it will receive a reply
 You can see that the client will still receive a reply, because according to the formula n > = 3f + 1, even if a node is down, the system can still run smoothly
 ![vofc2](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC3.png)
-##### 4.Close the two nodes (representing the evil and fault nodes) and input the information again to see if the reply will still be received
+##### 5.Close the two nodes (representing the evil and fault nodes) and input the information again to see if the reply will still be received
 It can be seen that after the two nodes are shut down, the number of failed nodes has exceeded the allowable number of pbft. When the message goes to the prepare stage, the fixed system will no longer confirm the commit because it can not receive the required number of messages, and the client will not receive the reply
 ![vofc3](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC4.png)
