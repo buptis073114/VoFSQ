@@ -1,51 +1,60 @@
->参考资料：
-> - https://www.jianshu.com/p/fb5edf031afd
-> -  https://www.cnblogs.com/gexin/p/10242161.html
+# VoFC
+Verification of File-Consistency (VoFC) is proposed to ensure that all participants keep consistent files. It can be ensured that the consistent files are really needed by the file-downloaders under the condition where more than two-thirds of participants in the whole network are honest. 
+VoFC is composed of Proof of SpaceTime and the PBFT algorithm.
 
-<br>
+This demo is the code implementation of VoFC consensus algorithm. If you want to learn more about PBFT, please browse the resources yourself.
 
-
-本demo为pbft共识算法的代码实现，如果想了解pbft的详细信息请自行浏览参考资料\
-本demo展示了pbft的部分功能（没有写主节点轮循机制），写的并不严谨，仅作为对pbft的了解用途
+This demo shows some functions of VoFC (not include master node rotation mechanism), which is not rigorous and is only used for understanding VoFC
 
 
-<br>
+![VoFC](![test](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC.png)
+)
+## Function:
 
-![在这里插入图片描述](images/流程图.webp)
-## 实现功能：
->pbft公式：  n>=3f + 1  其中n为全网总节点数量，f为最多允许的作恶、故障节点
-
-
-  数据从客户端输入，到接收到节点们的回复共分为5步
+There are three roles in VoFC, Client, Primary and replica. Client can be viewed as file downloader. The primary is a special file sharer who is elected by other file-sharers. The replica represents other file-sharers except the primary. There are five phases in file-consistency verification, namely request, pre-prepare, prepare, commit and reply.
   
- 1. 客户端向主节点发送请求信息
- 2. 主节点N0接收到客户端请求后将请求数据里的主要信息提出，并向其余节点进行preprepare发送
- 3. 从节点们接收到来自主节点的preprepare，首先利用主节点的公钥进行签名认证，其次将消息进行散列（消息摘要，以便缩小信息在网络中的传输大小）后，向其他节点广播prepare
- 4. 节点接收到2f个prepare信息（包含自己）,并全部签名验证通过，则可以进行到commit步骤，向全网其他节点广播commit
- 5. 节点接收到2f+1个commit信息（包含自己），并全部签名验证通过，则可以把消息存入到本地，并向客户端返回reply消息
+ 1. Client (file downloader) sends file download message to the primary.
+ 2. After receiving the message from the client, the primary verifies the digital signature. If the verification is passed, the primary constructs the pre-prepare message and send to other nodes.
+ 3. When the replica receives the message from the primary, the replica verifies the digital signature. If the verification is passed, the replica sends a prepare message to the primary.
+ 4. If the node receives 2f prepare messages (including itself) and all the signatures are verified, it can proceed to the commit step and broadcast commit to other nodes in the whole network.
+ 5. If the node receives 2f + 1 commit information (including itself) and all the signatures are verified, it can store the message locally and return the reply message to the client.
 
+
+## Operation steps:
 <br>
 
-
-## 运行步骤：
-<br>
-
-##### 1.下载/编译
+##### 1.Download/compile
 ```shell
- git clone https://github.com/corgi-kx/blockchain_consensus_algorithm.git
+ git clone https://github.com/buptis073114/VoFSQ.git
 ```
 ```shell
- cd blockchain_consensus_algorithm/pbft
+ cd VoFSQ/VoFC
 ```
 ```go
- go build -o pbft.exe
+ go build -o vofc.exe
 ```
 
-##### 2.开启五个端口（一个客户端，四个节点）
-客户端执行pbft.exe client  
-其他四个节点依次执行 pbft.exe N0  pbft.exe N1  pbft.exe N2  pbft.exe N3
-![在这里插入图片描述](images/启动.png)
-##### 3.输入一段信息，看看节点之间的同步过程
+##### 2.Open five ports (one client, four nodes)
+console execute 
+```shell script
+vofc.exe client
+```
+The other four nodes execute:
+```shell script
+vofc.exe N0
+```
+```shell script
+vofc.exe N1
+```
+```shell script
+vofc.exe N2
+```
+```shell script
+vofc.exe N3
+```
+
+![startup](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC1.png)
+##### 3.Enter message to see the synchronization process between nodes
 ![在这里插入图片描述](images/启动后.png)
 ##### 4.关闭一个节点（代表作恶、故障节点），再次输入信息，看看是否还会接收到reply
 可以看到，客户端依然会接收到reply，因为根据公式 n >= 3f+1  ，就算宕机一个节点，系统依然能顺利运行
@@ -53,6 +62,3 @@
 ##### 4.关闭两个节点（代表作恶、故障节点），再次输入信息，看看是否还会接收到reply
 可以看到，关闭两个节点后，故障节点已经超出了pbft的允许数量，消息进行到Prepare阶段由于接收不到满足数量的信息，固系统不再进行commit确认,客户端也接收不到reply
 ![在这里插入图片描述](images/关闭两个节点.png)
-
->**&ensp;&ensp;&ensp;建了个QQ群：722124200     有问题可以加群互相讨论   ：）** \
->**&ensp;&ensp;&ensp;邮箱:mikesen1994@gmail.com  &ensp;&ensp;&ensp; vx:965952482**
