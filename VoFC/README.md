@@ -55,10 +55,10 @@ vofc.exe N3
 
 ![startup](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC1.png)
 ##### 3.Enter message to see the synchronization process between nodes
-![在这里插入图片描述](images/启动后.png)
-##### 4.关闭一个节点（代表作恶、故障节点），再次输入信息，看看是否还会接收到reply
-可以看到，客户端依然会接收到reply，因为根据公式 n >= 3f+1  ，就算宕机一个节点，系统依然能顺利运行
-![](images/掉了一个节点后.png)
-##### 4.关闭两个节点（代表作恶、故障节点），再次输入信息，看看是否还会接收到reply
-可以看到，关闭两个节点后，故障节点已经超出了pbft的允许数量，消息进行到Prepare阶段由于接收不到满足数量的信息，固系统不再进行commit确认,客户端也接收不到reply
-![在这里插入图片描述](images/关闭两个节点.png)
+![vofc1](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC2.png)
+##### 4.Close a node (representing the evil or fault node) and input the information again to see if it will receive a reply
+You can see that the client will still receive a reply, because according to the formula n > = 3f + 1, even if a node is down, the system can still run smoothly
+![vofc2](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC3.png)
+##### 4.Close the two nodes (representing the evil and fault nodes) and input the information again to see if the reply will still be received
+It can be seen that after the two nodes are shut down, the number of failed nodes has exceeded the allowable number of pbft. When the message goes to the prepare stage, the fixed system will no longer confirm the commit because it can not receive the required number of messages, and the client will not receive the reply
+![vofc3](https://github.com/buptis073114/VoFSQ/blob/master/img/VoFC4.png)
