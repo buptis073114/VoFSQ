@@ -16,7 +16,6 @@ func clientSendMessageAndListen() {
 	//Turn on the local monitoring of the client (mainly used to receive the reply information of the node)
 	go clientTcpListen()
 	fmt.Printf("Client starts monitoring, address: %s\n", clientAddr)
-
 	fmt.Println(" ---------------------------------------------------------------------------------")
 	fmt.Println("|  Pbft test demo client has entered, please start all nodes before sending messages)  |")
 	fmt.Println(" ---------------------------------------------------------------------------------")

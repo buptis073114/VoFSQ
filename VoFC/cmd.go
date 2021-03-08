@@ -19,6 +19,7 @@ type Request struct {
 type PrePrepare struct {
 	RequestMessage Request
 	Digest         string
+	ch             string
 	SequenceID     int
 	Sign           []byte
 }
@@ -28,6 +29,8 @@ type Prepare struct {
 	Digest     string
 	SequenceID int
 	NodeID     string
+	//nodepath map[int64][]byte
+	ch1			string
 	Sign       []byte
 }
 
@@ -36,6 +39,8 @@ type Commit struct {
 	Digest     string
 	SequenceID int
 	NodeID     string
+	nodepath map[int64][]byte
+	result		string
 	Sign       []byte
 }
 

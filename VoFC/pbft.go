@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 	"../lib"
@@ -89,6 +90,7 @@ func (p *pbft) handleRequest(data []byte) {
 func (p *pbft) handleClientRequest(content []byte) {
 	fmt.Println("The node has received the request from the client...")
 	//Parsing the request structure using JSON
+	var ch string = "12345678901234567890123456789014"
 	r := new(Request)
 	err := json.Unmarshal(content, r)
 	if err != nil {
@@ -105,7 +107,8 @@ func (p *pbft) handleClientRequest(content []byte) {
 	digestByte, _ := hex.DecodeString(digest)
 	signInfo := p.RsaSignWithSha256(digestByte, p.node.rsaPrivKey)
 	//Splice it into prepare and send it to the follower node
-	pp := PrePrepare{*r, digest, p.sequenceID, signInfo}
+	pp := PrePrepare{*r, digest,
+		ch,p.sequenceID, signInfo}
 	b, err := json.Marshal(pp)
 	if err != nil {
 		log.Panic(err)
@@ -120,14 +123,6 @@ func (p *pbft) handleClientRequest(content []byte) {
 func (p *pbft) handlePrePrepare(content []byte) {
 	fmt.Println("This node has received the PrePrepare message from the master node...")
 	//Parse the PrePrepare structure with JSON
-	publicKey := lib.GetECCPublicKeyByte("eccpublic.pem")
-	identity = lib.GetSHA256HashCode(publicKey)
-	fmt.Println("user identity is ", identity)
-	var ch string = "12345678901234567890123456789014"
-	filename:="5K"
-	var readbitlen int64=10
-	nodepath=proverProofPhase.GenerateMerkleTree(filename,readbitlen,identity,ch)
-
 
 	pp := new(PrePrepare)
 	err := json.Unmarshal(content, pp)
@@ -144,6 +139,15 @@ func (p *pbft) handlePrePrepare(content []byte) {
 	} else if !p.RsaVerySignWithSha256(digestByte, pp.Sign, primaryNodePubKey) {
 		fmt.Println("The signature verification of the master node failed. Prepare broadcast is rejected")
 	} else {
+		//ch:= pp.ch
+		publicKey := lib.GetECCPublicKeyByte("eccpublic.pem")
+		identity = lib.GetSHA256HashCode(publicKey)
+		fmt.Println("user identity is ", identity)
+		//var ch string = "12345678901234567890123456789014"
+		filename:="5K"
+		var readbitlen int64=10
+		nodepath := proverProofPhase.GenerateMerkleTree(filename,readbitlen,identity,ch)
+		fmt.Println(nodepath)
 		//Serial number assignment
 		p.sequenceID = pp.SequenceID
 		//Storing information in temporary message pool
@@ -152,13 +156,18 @@ func (p *pbft) handlePrePrepare(content []byte) {
 		//Nodes sign message with private keys
 		sign := p.RsaSignWithSha256(digestByte, p.node.rsaPrivKey)
 		//Splicing into Prepare
-		pre := Prepare{pp.Digest, pp.SequenceID, p.node.nodeID, sign}
+		//ch1:="45678901234567890141234567890123"
+		pre := Prepare{pp.Digest, pp.SequenceID,
+			p.node.nodeID, ch,sign}
+		fmt.Println("pre is ",pre)
+
 		bPre, err := json.Marshal(pre)
 		if err != nil {
 			log.Panic(err)
 		}
 		//Broadcast in the preparation stage
 		fmt.Println("Prepare broadcast in progress...")
+		fmt.Println("bPre is "+string(bPre))
 		p.broadcast(cPrepare, bPre)
 		fmt.Println("Prepare broadcast complete")
 	}
@@ -167,32 +176,40 @@ func (p *pbft) handlePrePrepare(content []byte) {
 //Processing Prepare message
 func (p *pbft) handlePrepare(content []byte) {
 	//Parse the prepare structure with JSON
-	publicKey := lib.GetECCPublicKeyByte("eccpublic.pem")
-	identity = lib.GetSHA256HashCode(publicKey)
-	fmt.Println("user identity is ", identity)
-	var ch string = "12345678901234567890123456789014"
-	filename:="5K"
-	var readbitlen int64=10
-	nodepath=proverProofPhase.GenerateMerkleTree(filename,readbitlen,identity,ch)
-
-
-
 	pre := new(Prepare)
 	err := json.Unmarshal(content, pre)
 	if err != nil {
 		log.Panic(err)
 	}
 	fmt.Printf("This node has received the Prepare from %s node... \n", pre.NodeID)
+
+	//fmt.Println("pre is ",pre)
+	publicKey := lib.GetECCPublicKeyByte("eccpublic.pem")
+	identity = lib.GetSHA256HashCode(publicKey)
+	fmt.Println("user identity is ", identity)
+	//var ch string = "12345678901234567890123456789014"
+	filename:="5K"
+	var readbitlen int64=10
+
+	//ch1:=pre.ch1
+	//nodepath = pre.nodepath
+	fmt.Println("nodepath length is ", len(nodepath))
+	var ch string = "12345678901234567890123456789014"
+	var result string= verifierProofPhase.Verify(nodepath,filename,identity,readbitlen,ch)
+
 	//Obtain the public key of the message source node for digital signature verification
 	MessageNodePubKey := p.getPubKey(pre.NodeID)
 	digestByte, _ := hex.DecodeString(pre.Digest)
-	if _, ok := p.messagePool[pre.Digest]; !ok {
+	if (!strings.EqualFold(result,"verify success")){
+		fmt.Println("prepare phase, nodepath verify failed. Commit broadcast is rejected")
+	}else if _, ok := p.messagePool[pre.Digest]; !ok {
 		fmt.Println("The current temporary message pool does not have this digest. Commit broadcast is rejected")
 	} else if p.sequenceID != pre.SequenceID {
 		fmt.Println("The serial number of the message does not match. The commit broadcast is refused")
 	} else if !p.RsaVerySignWithSha256(digestByte, pre.Sign, MessageNodePubKey) {
 		fmt.Println("Node signature verification failed, refuse to execute commit broadcast")
 	} else {
+		nodepath := proverProofPhase.GenerateMerkleTree(filename,readbitlen,identity,ch)
 		p.setPrePareConfirmMap(pre.Digest, pre.NodeID, true)
 		count := 0
 		for range p.prePareConfirmCount[pre.Digest] {
@@ -214,7 +231,8 @@ func (p *pbft) handlePrepare(content []byte) {
 			fmt.Println("The node has received prepare information from at least 2f nodes (including local nodes) ...")
 			//The node signs it with a private key
 			sign := p.RsaSignWithSha256(digestByte, p.node.rsaPrivKey)
-			c := Commit{pre.Digest, pre.SequenceID, p.node.nodeID, sign}
+			c := Commit{pre.Digest, pre.SequenceID,
+				p.node.nodeID, nodepath,result,sign}
 			bc, err := json.Marshal(c)
 			if err != nil {
 				log.Panic(err)
@@ -232,8 +250,6 @@ func (p *pbft) handlePrepare(content []byte) {
 //Process submit confirmation message
 func (p *pbft) handleCommit(content []byte) {
 
-	verifierProofPhase.Verify(nodepath,filename,identity,readbitlen,ch)
-
 	//Using JSON to parse the commit structure
 	c := new(Commit)
 	err := json.Unmarshal(content, c)
@@ -244,7 +260,15 @@ func (p *pbft) handleCommit(content []byte) {
 	//Obtain the public key of the message source node for digital signature verification
 	MessageNodePubKey := p.getPubKey(c.NodeID)
 	digestByte, _ := hex.DecodeString(c.Digest)
-	if _, ok := p.prePareConfirmCount[c.Digest]; !ok {
+
+	//ch1:="45678901234567890141234567890123"
+	nodepath:=c.nodepath
+	var result string = verifierProofPhase.Verify(nodepath,filename,identity,readbitlen,ch)
+
+
+	if (!strings.EqualFold(result,"verify success")){
+		fmt.Println("commit phase, nodepath verify failed. Commit broadcast is rejected")
+	}else if _, ok := p.prePareConfirmCount[c.Digest]; !ok {
 		fmt.Println("The current prepare pool does not have this digest and refuses to persist information to the local message pool")
 	} else if p.sequenceID != c.SequenceID {
 		fmt.Println("Message number cannot be matched, message persistence to local message pool is refused")
